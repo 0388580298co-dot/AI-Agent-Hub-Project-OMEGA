@@ -1,0 +1,14 @@
+[runtime]
+max_iterations = 8
+timeout_seconds = 60
+token_budget = 12000
+
+[llm]
+provider = "local"
+model = "local-model"
+
+[tools]
+allow = ["web_search", "code_execution"]
+
+[memory]
+backend = "in_memory"
