@@ -15,7 +15,7 @@ from omega.llm_models.config import build_gateway
 from omega.memory.store import InMemoryMemoryStore
 from omega.orchestrator.orchestrator import Orchestrator
 from omega.tools.registry import ToolRegistry
-from omega.tools.runtime import register_standard_tools
+from omega.tools.runtime import ToolPermission, build_agent_tools, register_standard_tools
 
 
 class RunRequest(BaseModel):
@@ -32,7 +32,11 @@ repository = InMemoryRunRepository()
 memory = InMemoryMemoryStore()
 tool_registry = ToolRegistry()
 register_standard_tools(tool_registry)
-agent_factory = AgentFactory(llm=build_gateway(), memory=memory)
+agent_factory = AgentFactory(
+    llm=build_gateway(),
+    memory=memory,
+    tools=build_agent_tools(tool_registry, ToolPermission(frozenset(tool_registry.names()))),
+)
 runner = OMEGAAgentRunner(
     factory=agent_factory,
     orchestrator=Orchestrator(),
