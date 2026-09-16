@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omega-agent-os"
+version = "0.1.0"
+description = "PROJECT OMEGA - provider-neutral autonomous agent operating system"
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+authors = [{name = "PROJECT OMEGA Contributors"}]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "ruff>=0.6", "mypy>=1.10"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
