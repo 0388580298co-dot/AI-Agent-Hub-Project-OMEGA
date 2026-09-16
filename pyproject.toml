@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "omega-agent-os"
-version = "0.1.0"
+version = "0.2.0"
 description = "PROJECT OMEGA - provider-neutral autonomous agent operating system"
 requires-python = ">=3.11"
 readme = "README.md"
@@ -14,6 +14,15 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "pytest-asyncio>=0.23", "ruff>=0.6", "mypy>=1.10"]
+api = ["fastapi>=0.115", "uvicorn[standard]>=0.30", "pydantic>=2.8"]
+redis = ["redis>=5.0"]
+rabbitmq = ["aio-pika>=9.4"]
+qdrant = ["qdrant-client>=1.12"]
+telemetry = ["opentelemetry-api>=1.27", "opentelemetry-sdk>=1.27", "opentelemetry-exporter-otlp>=1.27"]
+all = ["fastapi>=0.115", "uvicorn[standard]>=0.30", "pydantic>=2.8", "redis>=5.0", "aio-pika>=9.4", "qdrant-client>=1.12", "opentelemetry-api>=1.27", "opentelemetry-sdk>=1.27", "opentelemetry-exporter-otlp>=1.27"]
+
+[project.scripts]
+omega-api = "omega.api.app:app"
 
 [tool.setuptools.packages.find]
 where = ["src"]
