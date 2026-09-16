@@ -8,7 +8,7 @@ import math
 import re
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Mapping, Protocol, Sequence
 
 
@@ -21,13 +21,19 @@ class MemoryRecord:
 
 
 class MemoryStore(Protocol):
-    async def remember(self, text: str, *, metadata: Mapping[str, Any] | None = None) -> None: ...
-    async def recall(self, query: str, *, limit: int = 5) -> Sequence[MemoryRecord]: ...
+    async def remember(self, text: str, *, metadata: Mapping[str, Any] | None = None) -> None:
+        raise NotImplementedError
+
+    async def recall(self, query: str, *, limit: int = 5) -> Sequence[MemoryRecord]:
+        raise NotImplementedError
 
 
 class VectorStore(Protocol):
-    async def upsert(self, record: MemoryRecord, vector: Sequence[float]) -> None: ...
-    async def search(self, vector: Sequence[float], *, limit: int = 5) -> Sequence[tuple[MemoryRecord, float]]: ...
+    async def upsert(self, record: MemoryRecord, vector: Sequence[float]) -> None:
+        raise NotImplementedError
+
+    async def search(self, vector: Sequence[float], *, limit: int = 5) -> Sequence[tuple[MemoryRecord, float]]:
+        raise NotImplementedError
 
 
 class InMemoryVectorStore:
@@ -83,8 +89,7 @@ class HashEmbedding:
         for token in tokens:
             digest = hashlib.blake2b(token.encode("utf-8"), digest_size=16).digest()
             index = int.from_bytes(digest[:4], "big") % self.dimensions
-            sign = 1.0 if digest[4] & 1 else -1.0
-            vector[index] += sign
+            vector[index] += 1.0 if digest[4] & 1 else -1.0
         norm = math.sqrt(sum(value * value for value in vector))
         if norm:
             vector = [value / norm for value in vector]
@@ -106,7 +111,7 @@ class InMemoryMemoryStore:
     async def remember(self, text: str, *, metadata: Mapping[str, Any] | None = None) -> None:
         if not isinstance(text, str) or not text.strip():
             raise ValueError("Memory text cannot be empty")
-        record = MemoryRecord(id=str(uuid.uuid4()), text=text.strip(), metadata=dict(metadata or {}), created_at=time.time())
+        record = MemoryRecord(str(uuid.uuid4()), text.strip(), dict(metadata or {}), time.time())
         vector = await self._embedding.embed(record.text)
         await self._vectors.upsert(record, vector)
         async with self._lock:
@@ -115,9 +120,7 @@ class InMemoryMemoryStore:
                 del self._short_term[:-self._short_term_limit]
 
     async def recall(self, query: str, *, limit: int = 5) -> Sequence[MemoryRecord]:
-        if not query.strip():
-            return ()
-        if limit < 1:
+        if not isinstance(query, str) or not query.strip() or limit < 1:
             return ()
         vector = await self._embedding.embed(query)
         matches = await self._vectors.search(vector, limit=limit)
